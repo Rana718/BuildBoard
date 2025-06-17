@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  password         String
+  role             Role      @default(BUYER)
+  profileImageUrl  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  projectsAsBuyer  Project[] @relation("BuyerProjects")
+  projectsAsSeller Project[] @relation("SellerProjects")
+  bids             Bid[]
+  reviewsGiven     Review[]  @relation("BuyerReviews")
+  reviewsReceived  Review[]  @relation("SellerReviews")
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  budgetRange String
+  deadline    DateTime
+  status      ProjectStatus @default(PENDING)
+  imageUrl    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Foreign Keys
+  buyerId  String
+  sellerId String?
+
+  // Relations
+  buyer        User          @relation("BuyerProjects", fields: [buyerId], references: [id])
+  seller       User?         @relation("SellerProjects", fields: [sellerId], references: [id])
+  bids         Bid[]
+  deliverables Deliverable[]
+  reviews      Review[]
+
+  @@map("projects")
+}
+
+model Bid {
+  id                      String   @id @default(cuid())
+  bidAmount               Float
+  estimatedCompletionTime String
+  message                 String
+  createdAt               DateTime @default(now())
+
+  // Foreign Keys
+  projectId String
+  sellerId  String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  seller  User    @relation(fields: [sellerId], references: [id])
+
+  @@unique([projectId, sellerId])
+  @@map("bids")
+}
+
+model Deliverable {
+  id         String   @id @default(cuid())
+  fileUrl    String
+  uploadedAt DateTime @default(now())
+
+  // Foreign Keys
+  projectId String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("deliverables")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @db.SmallInt
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // Foreign Keys
+  projectId String @unique
+  buyerId   String
+  sellerId  String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  buyer   User    @relation("BuyerReviews", fields: [buyerId], references: [id])
+  seller  User    @relation("SellerReviews", fields: [sellerId], references: [id])
+
+  @@map("reviews")
+}
+
+enum Role {
+  BUYER
+  SELLER
+}
+
+enum ProjectStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
