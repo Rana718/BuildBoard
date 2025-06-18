@@ -60,15 +60,19 @@ export function Layout({ children }: LayoutProps) {
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.profileImageUrl} />
-                  <AvatarFallback>
-                    {user.name.split(' ').map((n:any) => n[0]).join('').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <Link href={`/profile/${user.id}`}>
+                  <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all">
+                    <AvatarImage src={user.profileImageUrl} />
+                    <AvatarFallback>
+                      {user.name.split(' ').map((n:any) => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div className="hidden md:block">
-                  <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                  <div className="text-xs text-gray-500 capitalize">{user.role.toLowerCase()}</div>
+                  <Link href={`/profile/${user.id}`} className="hover:text-blue-600 transition-colors">
+                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                    <div className="text-xs text-gray-500 capitalize">{user.role.toLowerCase()}</div>
+                  </Link>
                 </div>
               </div>
               <Button

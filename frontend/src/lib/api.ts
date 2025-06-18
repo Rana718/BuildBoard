@@ -66,4 +66,20 @@ export const reviewsAPI = {
   update: (projectId: string, data: any) => api.put(`/reviews/${projectId}`, data),
 };
 
+// Profile API
+export const profileAPI = {
+  getProfile: (userId: string) => api.get(`/profile/${userId}`),
+  updateProfile: (userId: string, data: any) => api.put(`/profile/${userId}`, data),
+  getStatsStream: (userId: string) => `/profile/${userId}/stats-stream`,
+};
+
+// Payments API
+export const paymentsAPI = {
+  create: (data: any) => api.post('/payments/create', data),
+  process: (paymentId: string, data: any) => api.post(`/payments/${paymentId}/process`, data),
+  getPayment: (paymentId: string) => api.get(`/payments/${paymentId}`),
+  getProjectPayments: (projectId: string) => api.get(`/payments/project/${projectId}`),
+  getPaymentHistory: (params?: any) => api.get('/payments/user/history', { params }),
+};
+
 export default api;

@@ -269,7 +269,9 @@ export default function ProjectDetailPage() {
     project?.buyer.id === user?.id && 
     project?.status === 'COMPLETED' &&
     project?.reviews.length === 0;
-
+  const canMakePayment = user?.role === 'BUYER' && 
+    project?.buyer.id === user?.id && 
+    project?.status === 'COMPLETED';
   if (loading) {
     return (
       <Layout>
@@ -595,7 +597,47 @@ export default function ProjectDetailPage() {
                 </CardContent>
               </Card>
             )}
-          </div>
+            {/* Payment Section */}
+            {canMakePayment && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <DollarSign className="h-5 w-5" />
+                    <span>Payment</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Complete payment for this project
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center space-x-2 text-green-800">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-medium">Project Completed</span>
+                      </div>
+                      <p className="text-sm text-green-700 mt-1">
+                        The seller has completed the project. You can now proceed with payment.
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-gray-600">Suggested Amount:</span>
+                      <span className="font-semibold">{project.budgetRange}</span>
+                    </div>
+
+                    <Button 
+                      onClick={() => router.push(`/payments/${project.id}`)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Make Payment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}          </div>
 
           {/* Sidebar */}
           <div className="space-y-6">

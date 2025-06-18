@@ -86,6 +86,23 @@ router.post('/:projectId', requireRole(['BUYER']), async (req: AuthRequest, res)
         }
       }
     });
+
+    // Update seller's average rating and total reviews
+    const sellerReviews = await prisma.review.findMany({
+      where: { sellerId: project.sellerId },
+      select: { rating: true }
+    });
+
+    const totalReviews = sellerReviews.length;
+    const averageRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    await prisma.user.update({
+      where: { id: project.sellerId },
+      data: {
+        averageRating,
+        totalReviews,
+      }
+    });
     
     res.status(201).json({
       message: 'Review created successfully',
@@ -285,6 +302,23 @@ router.put('/:projectId', requireRole(['BUYER']), async (req: AuthRequest, res) 
             title: true,
           }
         }
+      }
+    });
+
+    // Recalculate seller's average rating
+    const sellerReviews = await prisma.review.findMany({
+      where: { sellerId: review.sellerId },
+      select: { rating: true }
+    });
+
+    const totalReviews = sellerReviews.length;
+    const averageRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    await prisma.user.update({
+      where: { id: review.sellerId },
+      data: {
+        averageRating,
+        totalReviews,
       }
     });
     

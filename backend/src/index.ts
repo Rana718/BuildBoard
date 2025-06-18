@@ -6,6 +6,8 @@ import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import bidRoutes from './routes/bids.js';
 import reviewRoutes from './routes/reviews.js';
+import profileRoutes from './routes/profile.js';
+import paymentRoutes from './routes/payments.js';
 // import uploadRoutes from './routes/upload.js';
 
 dotenv.config();
@@ -28,6 +30,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/bids', authenticateToken, bidRoutes);
 app.use('/api/reviews', authenticateToken, reviewRoutes);
+app.use('/api/profile', authenticateToken, profileRoutes);
+app.use('/api/payments', authenticateToken, paymentRoutes);
 // app.use('/api/upload', authenticateToken, uploadRoutes);
 
 // Health check

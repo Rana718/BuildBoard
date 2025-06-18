@@ -17,6 +17,10 @@ model User {
   password         String
   role             Role      @default(BUYER)
   profileImageUrl  String?
+  bio              String?
+  skills           String[]  @default([])
+  averageRating    Float     @default(0)
+  totalReviews     Int       @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -26,6 +30,7 @@ model User {
   bids             Bid[]
   reviewsGiven     Review[]  @relation("BuyerReviews")
   reviewsReceived  Review[]  @relation("SellerReviews")
+  payments         Payment[]
 
   @@map("users")
 }
@@ -35,6 +40,7 @@ model Project {
   title       String
   description String
   budgetRange String
+  finalAmount Float?
   deadline    DateTime
   status      ProjectStatus @default(PENDING)
   imageUrl    String?
@@ -51,6 +57,7 @@ model Project {
   bids         Bid[]
   deliverables Deliverable[]
   reviews      Review[]
+  payments     Payment[]
 
   @@map("projects")
 }
@@ -116,4 +123,33 @@ enum ProjectStatus {
   PENDING
   IN_PROGRESS
   COMPLETED
+  CANCELLED
+  PAYMENT_PENDING
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  transactionId String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Foreign Keys
+  projectId String
+  buyerId   String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  buyer   User    @relation(fields: [buyerId], references: [id])
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
