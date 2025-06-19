@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { projectsAPI } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Search, Filter, Plus, Calendar, DollarSign, Users } from 'lucide-react';
+import { Search, Filter, Plus, Calendar, DollarSign, Users, Eye } from 'lucide-react';
 import Image from 'next/image';
 
 interface Project {
@@ -101,16 +100,16 @@ export default function ProjectsPage() {
     setFilteredProjects(filtered);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Pending</Badge>;
       case 'IN_PROGRESS':
-        return 'bg-blue-100 text-blue-800';
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">In Progress</Badge>;
       case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Completed</Badge>;
       default:
-        return 'bg-gray-100 text-gray-800';
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -119,12 +118,13 @@ export default function ProjectsPage() {
   }
 
   return (
-    <Layout>
-      <div className="px-4 sm:px-0">
-        <div className="flex justify-between items-center mb-8">
+    
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Projects</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               {user.role === 'BUYER' 
                 ? 'Manage your posted projects'
                 : 'Browse available projects and submit bids'
@@ -133,7 +133,7 @@ export default function ProjectsPage() {
           </div>
           {user.role === 'BUYER' && (
             <Link href="/projects/create">
-              <Button>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Project
               </Button>
@@ -142,25 +142,25 @@ export default function ProjectsPage() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
+        <Card className="bg-card border-border">
+          <CardContent className="">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder="Search projects..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  className="px-3 py-2 bg-background border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="all">All Status</option>
                   <option value="PENDING">Pending</option>
@@ -171,7 +171,7 @@ export default function ProjectsPage() {
                   <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md"
+                    className="px-3 py-2 bg-background border border-input rounded-md text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="all">Available Projects</option>
                     <option value="my-projects">My Projects</option>
@@ -184,67 +184,79 @@ export default function ProjectsPage() {
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4">Loading projects...</p>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground mt-3 text-sm">Loading projects...</p>
           </div>
         ) : filteredProjects.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <p className="text-gray-500 mb-4">No projects found</p>
-              {user.role === 'BUYER' && (
-                <Link href="/projects/create">
-                  <Button>Create Your First Project</Button>
-                </Link>
-              )}
+          <Card className="bg-card border-border">
+            <CardContent className="text-center py-8">
+              <div className="space-y-3">
+                <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto">
+                  <Search className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-card-foreground">No projects found</h3>
+                <p className="text-muted-foreground text-sm">
+                  {searchTerm ? 'Try adjusting your search terms' : 'No projects match your current filters'}
+                </p>
+                {user.role === 'BUYER' && !searchTerm && (
+                  <Link href="/projects/create">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Project
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project) => (
-              <Card key={project.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
+              <Card key={project.id} className="bg-card border-border hover:shadow-lg transition-all duration-200 hover:scale-[1.02] group">
+                <CardHeader className="p-4 pb-3">
                   {project.imageUrl && (
-                    <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+                    <div className="relative h-40 mb-3 rounded-lg overflow-hidden bg-muted/20">
                       <Image
                         src={project.imageUrl}
                         alt={project.title}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-transform duration-200 group-hover:scale-105"
                       />
                     </div>
                   )}
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg line-clamp-2">{project.title}</CardTitle>
-                    <Badge className={getStatusColor(project.status)}>
-                      {project.status.replace('_', ' ')}
-                    </Badge>
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base font-semibold text-card-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                      {project.title}
+                    </CardTitle>
+                    {getStatusBadge(project.status)}
                   </div>
-                  <CardDescription className="line-clamp-3">
+                  <CardDescription className="text-sm text-muted-foreground line-clamp-3 mt-2">
                     {project.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      <span>{project.budgetRange}</span>
+                <CardContent className="p-4 pt-0">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <DollarSign className="h-4 w-4 mr-2 text-green-400" />
+                      <span className="font-medium text-card-foreground">{project.budgetRange}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="h-4 w-4 mr-2" />
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4 mr-2 text-blue-400" />
                       <span>Due: {format(new Date(project.deadline), 'MMM dd, yyyy')}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="h-4 w-4 mr-2" />
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Users className="h-4 w-4 mr-2 text-purple-400" />
                       <span>{project._count.bids} bids</span>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      Posted by {project.buyer.name}
+                    <div className="text-sm text-muted-foreground">
+                      Posted by <span className="font-medium text-card-foreground">{project.buyer.name}</span>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t">
+                  <div className="pt-3 border-t border-border">
                     <Link href={`/projects/${project.id}`}>
-                      <Button className="w-full">
+                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm group">
+                        <Eye className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
                         View Details
                       </Button>
                     </Link>
@@ -255,6 +267,5 @@ export default function ProjectsPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

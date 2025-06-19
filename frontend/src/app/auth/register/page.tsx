@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,16 +10,17 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/lib/api';
-import { useAuth } from '@/lib/auth';
-import { FileUpload } from '@/components/FileUpload';
+import { Eye, EyeOff, User, Mail, Lock, UserCheck } from 'lucide-react';
+import Link from 'next/link';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  role: z.enum(['BUYER', 'SELLER'], { required_error: 'Please select a role' }),
-  profileImageUrl: z.string().optional(),
+  confirmPassword: z.string().min(6, 'Please confirm your password'),
+  role: z.enum(['BUYER', 'SELLER'], {
+    required_error: 'Please select your role',
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -30,191 +30,271 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
-  const [profileImage, setProfileImage] = useState<string>('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { login } = useAuth();
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
+    watch,
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
 
+  const selectedRole = watch('role');
+
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true);
     try {
-      const submitData = {
-        ...data,
-        profileImageUrl: profileImage || undefined,
-      };
-
-      const response = await authAPI.register(submitData);
-      const { user, token } = response.data;
-
-      login(user, token);
-      toast({
-        title: 'Registration successful',
-        description: `Welcome to the platform, ${user.name}!`,
+      await authAPI.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
       });
 
-      router.push('/dashboard');
+      toast({
+        title: 'Account created successfully!',
+        description: 'Please check your email to verify your account.',
+      });
+
+      router.push('/auth/login');
     } catch (error: any) {
       toast({
         title: 'Registration failed',
-        description: error.response?.data?.message || 'An error occurred',
-        variant:'error',
+        description: error.response?.data?.message || 'An error occurred during registration',
+        variant: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageUpload = (url: string) => {
-    setProfileImage(url);
-    setValue('profileImageUrl', url);
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">BuildBoard</h1>
-          <p className="text-muted-foreground">Project Management Platform</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <Link href="/" className="inline-block">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              BuildBoard
+            </h1>
+          </Link>
+          <h2 className="text-2xl font-semibold text-foreground">Create Account</h2>
+          <p className="text-muted-foreground">
+            Join our community of buyers and sellers
+          </p>
         </div>
 
-        <Card className="border-border bg-card shadow-lg">
-          <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-2xl font-bold text-card-foreground">Create Account</CardTitle>
+        {/* Registration Form */}
+        <Card className="bg-card/80 backdrop-blur-sm border-2 border-border/50 shadow-xl">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-xl text-card-foreground flex items-center justify-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <UserCheck className="w-5 h-5 text-primary" />
+              </div>
+              Sign Up
+            </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Join our platform as a buyer or seller
+              Fill in your details to get started
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-card-foreground mb-2">
-                  Profile Picture (Optional)
-                </label>
-                <FileUpload
-                  onUpload={handleImageUpload}
-                  accept="image/*"
-                  maxSize={2 * 1024 * 1024} // 2MB
-                  className="mb-4"
-                />
-              </div>
 
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Full Name */}
               <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-card-foreground">
-                  Full Name
+                <label htmlFor="name" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                  <User className="w-4 h-4 text-primary" />
+                  Full Name *
                 </label>
                 <Input
                   id="name"
-                  {...register('name')}
-                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.name ? 'border-destructive focus-visible:ring-destructive' : ''
-                    }`}
+                  type="text"
                   placeholder="Enter your full name"
+                  {...register('name')}
+                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
+                    errors.name ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                  }`}
                 />
                 {errors.name && (
-                  <p className="text-destructive text-sm">{errors.name.message}</p>
+                  <p className="text-destructive text-sm font-medium">{errors.name.message}</p>
                 )}
               </div>
 
+              {/* Email */}
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-card-foreground">
-                  Email
+                <label htmlFor="email" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-primary" />
+                  Email Address *
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  {...register('email')}
-                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.email ? 'border-destructive focus-visible:ring-destructive' : ''
-                    }`}
                   placeholder="Enter your email address"
+                  {...register('email')}
+                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
+                    errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                  }`}
                 />
                 {errors.email && (
-                  <p className="text-destructive text-sm">{errors.email.message}</p>
+                  <p className="text-destructive text-sm font-medium">{errors.email.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="role" className="block text-sm font-medium text-card-foreground">
-                  I want to
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-card-foreground">
+                  I want to *
                 </label>
-                <select
-                  id="role"
-                  {...register('role')}
-                  className={`w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${errors.role ? 'border-destructive focus:ring-destructive' : ''
-                    }`}
-                >
-                  <option value="" className="text-muted-foreground">Select your role</option>
-                  <option value="BUYER" className="text-foreground">Post projects and hire sellers</option>
-                  <option value="SELLER" className="text-foreground">Find projects and submit bids</option>
-                </select>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                    selectedRole === 'BUYER' 
+                      ? 'border-primary bg-primary/10 text-primary' 
+                      : 'border-border hover:border-primary/50 hover:bg-accent/50'
+                  }`}>
+                    <input
+                      type="radio"
+                      value="BUYER"
+                      {...register('role')}
+                      className="sr-only"
+                    />
+                    <div className="text-2xl mb-2">🛒</div>
+                    <span className="font-medium">Buy Services</span>
+                    <span className="text-xs text-muted-foreground mt-1 text-center">
+                      Post projects and hire talent
+                    </span>
+                  </label>
+
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                    selectedRole === 'SELLER' 
+                      ? 'border-primary bg-primary/10 text-primary' 
+                      : 'border-border hover:border-primary/50 hover:bg-accent/50'
+                  }`}>
+                    <input
+                      type="radio"
+                      value="SELLER"
+                      {...register('role')}
+                      className="sr-only"
+                    />
+                    <div className="text-2xl mb-2">💼</div>
+                    <span className="font-medium">Sell Services</span>
+                    <span className="text-xs text-muted-foreground mt-1 text-center">
+                      Offer your skills and get hired
+                    </span>
+                  </label>
+                </div>
                 {errors.role && (
-                  <p className="text-destructive text-sm">{errors.role.message}</p>
+                  <p className="text-destructive text-sm font-medium">{errors.role.message}</p>
                 )}
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-card-foreground">
-                  Password
+                <label htmlFor="password" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-primary" />
+                  Password *
                 </label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register('password')}
-                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.password ? 'border-destructive focus-visible:ring-destructive' : ''
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create a strong password"
+                    {...register('password')}
+                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
+                      errors.password ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
                     }`}
-                  placeholder="Enter your password"
-                />
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {errors.password && (
-                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                  <p className="text-destructive text-sm font-medium">{errors.password.message}</p>
                 )}
               </div>
 
+              {/* Confirm Password */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-card-foreground">
-                  Confirm Password
+                <label htmlFor="confirmPassword" className="text-sm font-semibold text-card-foreground flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-primary" />
+                  Confirm Password *
                 </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...register('confirmPassword')}
-                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : ''
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
+                    {...register('confirmPassword')}
+                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
+                      errors.confirmPassword ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
                     }`}
-                  placeholder="Confirm your password"
-                />
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
-                  <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
+                  <p className="text-destructive text-sm font-medium">{errors.confirmPassword.message}</p>
                 )}
               </div>
 
+              {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5"
                 disabled={loading}
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base transition-all duration-200 hover:scale-[1.02] shadow-lg hover:shadow-xl"
               >
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Creating Account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
               </Button>
             </form>
-
-            <div className="text-center pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <Link
-                  href="/auth/login"
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </div>
           </CardContent>
         </Card>
+
+        {/* Login Link */}
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link 
+              href="/auth/login" 
+              className="font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              Sign in here
+            </Link>
+          </p>
+        </div>
+
+        {/* Terms */}
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            By creating an account, you agree to our{' '}
+            <Link href="/terms" className="text-primary hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
