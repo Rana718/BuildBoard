@@ -48,6 +48,11 @@ export const projectsAPI = {
   selectSeller: (id: string, sellerId: string) => api.post(`/projects/select-seller/${id}`, { sellerId }),
   complete: (id: string) => api.post(`/projects/complete/${id}`),
   uploadDeliverable: (id: string, fileUrl: string) => api.post(`/projects/deliver/${id}`, { fileUrl }),
+  // New endpoints for seller projects
+  getAssignedProjects: () => api.get('/projects/seller/assigned'),
+  getCompletedProjects: () => api.get('/projects/seller/completed'),
+  // New endpoint for buyer projects
+  getCreatedProjects: () => api.get('/projects/buyer/created'),
 };
 
 // Bids API

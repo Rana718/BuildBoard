@@ -118,89 +118,15 @@ router.get('/:userId', async (req: AuthRequest, res) => {
   }
 });
 
-// Get profile statistics for charts (SSE endpoint)
-router.get('/:userId/stats-stream', async (req: AuthRequest, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*',
-  });
-
-  const sendStats = async () => {
-    try {
-      const { userId } = req.params;
-      
-      // Get monthly project statistics for the last 6 months
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-      const monthlyStats = await prisma.project.findMany({
-        where: {
-          OR: [
-            { buyerId: userId },
-            { sellerId: userId }
-          ],
-          createdAt: {
-            gte: sixMonthsAgo
-          }
-        },
-        select: {
-          createdAt: true,
-          status: true,
-          finalAmount: true
-        }
-      });
-
-      // Group by month
-      const monthlyData = monthlyStats.reduce((acc, project) => {
-        const month = project.createdAt.toISOString().slice(0, 7); // YYYY-MM
-        if (!acc[month]) {
-          acc[month] = { projects: 0, earnings: 0, completed: 0 };
-        }
-        acc[month].projects++;
-        if (project.status === 'COMPLETED' && project.finalAmount) {
-          acc[month].earnings += project.finalAmount;
-          acc[month].completed++;
-        }
-        return acc;
-      }, {} as Record<string, { projects: number; earnings: number; completed: number }>);
-
-      const data = {
-        timestamp: new Date().toISOString(),
-        monthlyData,
-        totalProjects: monthlyStats.length,
-        totalEarnings: Object.values(monthlyData).reduce((sum, month) => sum + month.earnings, 0),
-        completedProjects: Object.values(monthlyData).reduce((sum, month) => sum + month.completed, 0)
-      };
-
-      res.write(`data: ${JSON.stringify(data)}\n\n`);
-    } catch (error) {
-      console.error('Error in SSE:', error);
-      res.write(`data: ${JSON.stringify({ error: 'Failed to fetch stats' })}\n\n`);
-    }
-  };
-
-  // Send initial data
-  await sendStats();
-
-  // Send updates every 30 seconds
-  const interval = setInterval(sendStats, 30000);
-
-  req.on('close', () => {
-    clearInterval(interval);
-  });
-});
-
 // Update user profile
 router.put('/:userId', async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params;
     const updateSchema = z.object({
-      name: z.string().optional(),
-      bio: z.string().optional(),
-      skills: z.array(z.string()).optional(),
-      profileImageUrl: z.string().optional(),
+      name: z.string().min(1, 'Name is required').optional(),
+      bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
+      skills: z.array(z.string()).max(10, 'Maximum 10 skills allowed').optional(),
+      profileImageUrl: z.string().url('Invalid image URL').optional(),
     });
 
     const validatedData = updateSchema.parse(req.body);
@@ -227,8 +153,17 @@ router.put('/:userId', async (req: AuthRequest, res) => {
       }
     });
 
-    res.json(updatedUser);
+    res.json({
+      message: 'Profile updated successfully',
+      user: updatedUser
+    });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        errors: error.errors 
+      });
+    }
     console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Internal server error' });
   }

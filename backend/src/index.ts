@@ -7,7 +7,6 @@ import projectRoutes from './routes/projects.js';
 import bidRoutes from './routes/bids.js';
 import reviewRoutes from './routes/reviews.js';
 import profileRoutes from './routes/profile.js';
-import paymentRoutes from './routes/payments.js';
 // import uploadRoutes from './routes/upload.js';
 
 dotenv.config();
@@ -31,29 +30,38 @@ app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/bids', authenticateToken, bidRoutes);
 app.use('/api/reviews', authenticateToken, reviewRoutes);
 app.use('/api/profile', authenticateToken, profileRoutes);
-app.use('/api/payments', authenticateToken, paymentRoutes);
 // app.use('/api/upload', authenticateToken, uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'BuildBoard API Server is running',
+    version: '2.0.0',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error('Error:', err.stack);
   res.status(500).json({ 
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ 
+    message: 'API endpoint not found',
+    path: req.originalUrl,
+    method: req.method
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 BuildBoard API Server running on port ${PORT}`);
   console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
 });

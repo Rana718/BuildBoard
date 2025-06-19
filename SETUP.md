@@ -1,37 +1,47 @@
-# WebBuy Project Setup Guide
+# BuildBoard Setup Guide
 
-## New Features Added
+## Project Overview
 
-### 1. Enhanced Profile System
-- **Comprehensive Profile Pages**: View detailed user profiles with project statistics, ratings, and reviews
-- **Role-based Statistics**: 
-  - Buyers: Total projects, pending, in-progress, completed, cancelled
-  - Sellers: Total projects, assigned, completed, average rating
-- **Rating System**: 5-star rating system similar to Play Store with visual distribution
-- **Reviews Display**: Latest 10 reviews with detailed view option
-- **Profile Editing**: Update name, bio, skills, and profile image
-- **Public Profile Access**: View any user's profile using their user ID
+BuildBoard is a modern, full-stack project management platform with a sleek dark theme that connects buyers with skilled sellers. The platform has been streamlined to focus on core functionality with an enhanced user experience.
 
-### 2. Real-time Analytics with SSE
-- **Live Charts**: Real-time project and earnings data using Server-Sent Events
-- **Monthly Statistics**: 6-month historical data with trend analysis
-- **Interactive Charts**: Line charts for project activity, bar charts for earnings
-- **Connection Status**: Live connection indicator with last update timestamp
+## Key Features
 
-### 3. Payment System
-- **Payment Processing**: Complete payment flow for completed projects
-- **Multiple Payment Methods**: Credit/Debit Card, PayPal, Bank Transfer
-- **Payment History**: Track all payments with detailed transaction records
-- **Secure Processing**: Simulated payment processing with success/failure handling
-- **Payment Status Tracking**: Real-time payment status updates
+### 1. Enhanced Dark Theme UI
+- **Modern Dark Interface**: Carefully crafted dark theme with high contrast ratios
+- **Gradient Backgrounds**: Subtle gradients for visual depth and modern aesthetics
+- **Smooth Animations**: CSS transitions and keyframe animations for all interactions
+- **Responsive Design**: Mobile-first approach with optimized breakpoints
+- **Interactive Elements**: Hover effects, scale animations, and smooth transitions
+
+### 2. Streamlined User Experience
+- **Intuitive Navigation**: Clean navigation with active state indicators
+- **Loading States**: Shimmer effects and skeleton screens for better UX
+- **Status Indicators**: Color-coded project status badges
+- **Card Interactions**: Hover effects with elevation and shadow changes
+- **Form Enhancements**: Improved focus states and validation feedback
+
+### 3. Core Platform Features
+- **User Authentication**: Secure JWT-based authentication with role management
+- **Project Management**: Complete project lifecycle from creation to completion
+- **Bidding System**: Competitive bidding with detailed proposals
+- **File Upload**: Cloudinary integration with drag-and-drop interface
+- **Review System**: 5-star rating system with detailed feedback
+- **Email Notifications**: Automated SMTP notifications for project updates
 
 ### 4. Enhanced Database Schema
-- **User Enhancements**: Added bio, skills, averageRating, totalReviews fields
-- **Project Updates**: Added finalAmount and PAYMENT_PENDING status
-- **Payment Model**: Complete payment tracking with status and transaction details
-- **Rating Calculations**: Automatic rating updates when reviews are created/updated
+- **User Profiles**: Comprehensive user information with skills and ratings
+- **Project Tracking**: Detailed project status and deadline management
+- **Bid Management**: Competitive bidding with seller proposals
+- **File Handling**: Deliverable tracking with metadata
+- **Review System**: Rating calculations with automatic updates
 
 ## Setup Instructions
+
+### Prerequisites
+- Node.js 18+ or Bun runtime
+- PostgreSQL database
+- Cloudinary account for file storage
+- SMTP email service for notifications
 
 ### Backend Setup
 
@@ -41,10 +51,25 @@ cd backend
 bun install
 ```
 
-2. **Environment Variables**:
+2. **Environment Configuration**:
 ```bash
 cp .env.example .env
-# Update .env with your database and service credentials
+```
+
+Edit `.env` with your configuration:
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/buildboard_db"
+JWT_SECRET="your-super-secret-jwt-key"
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL="http://localhost:3000"
+
+# Email Configuration
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM="your-email@gmail.com"
 ```
 
 3. **Database Setup**:
@@ -54,12 +79,17 @@ bunx prisma generate
 
 # Push schema to database
 bunx prisma db push
+
+# Optional: Seed database with sample data
+bunx prisma db seed
 ```
 
-4. **Start Backend**:
+4. **Start Backend Server**:
 ```bash
 bun run dev
 ```
+
+Server will run on `http://localhost:5000`
 
 ### Frontend Setup
 
@@ -69,110 +99,196 @@ cd frontend
 bun install
 ```
 
-2. **Environment Variables**:
+2. **Environment Configuration**:
 ```bash
 cp .env.example .env.local
-# Update .env.local with your API URL and Cloudinary credentials
 ```
 
-3. **Start Frontend**:
+Edit `.env.local` with your configuration:
+```env
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+NEXT_PUBLIC_CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+NEXT_PUBLIC_API_URL="http://localhost:5000/api"
+```
+
+3. **Start Frontend Server**:
 ```bash
 bun run dev
 ```
 
-## New API Endpoints
+Frontend will run on `http://localhost:3000`
 
-### Profile Endpoints
+## API Endpoints
+
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration with role selection
+- `POST /api/auth/login` - User authentication with JWT generation
+- `GET /api/auth/me` - Get current authenticated user profile
+- `PUT /api/auth/profile` - Update user profile information
+
+### Project Management Endpoints
+- `POST /api/projects/create` - Create new project (Buyer only)
+- `GET /api/projects` - Get projects with role-based filtering
+- `GET /api/projects/:id` - Get single project with full details
+- `POST /api/projects/select-seller/:id` - Select seller for project
+- `POST /api/projects/complete/:id` - Mark project as completed
+- `POST /api/projects/deliver/:id` - Upload project deliverable
+
+### Bidding System Endpoints
+- `POST /api/bids/place` - Place bid on project (Seller only)
+- `GET /api/bids/:projectId` - Get all bids for specific project
+
+### Review System Endpoints
+- `POST /api/reviews/:projectId` - Create review for completed project
+- `GET /api/reviews/seller/:sellerId` - Get all reviews for seller
+
+### Profile Management Endpoints
 - `GET /api/profile/:userId` - Get user profile with statistics
-- `PUT /api/profile/:userId` - Update user profile
-- `GET /api/profile/:userId/stats-stream` - SSE endpoint for real-time analytics
+- `PUT /api/profile/:userId` - Update user profile information
 
-### Payment Endpoints
-- `POST /api/payments/create` - Create payment for project
-- `POST /api/payments/:paymentId/process` - Process payment
-- `GET /api/payments/:paymentId` - Get payment details
-- `GET /api/payments/project/:projectId` - Get project payments
-- `GET /api/payments/user/history` - Get user payment history
+## Frontend Routes
 
-## New Frontend Routes
+### Public Routes
+- `/` - Landing page with platform overview
+- `/auth/login` - User login page
+- `/auth/register` - User registration page
 
-### Profile Routes
-- `/profile/[userId]` - User profile page with tabs for overview, projects, reviews, analytics
+### Protected Routes
+- `/dashboard` - User dashboard with project overview
+- `/projects` - Project listing with filtering
+- `/projects/create` - Create new project (Buyer only)
+- `/projects/[id]` - Project details and management
+- `/profile/[userId]` - User profile with statistics and reviews
 
-### Payment Routes
-- `/payments/[projectId]` - Payment processing page for completed projects
+## Database Schema
 
-## Key Features
+### User Model
+```prisma
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  password         String
+  role             Role      @default(BUYER)
+  profileImageUrl  String?
+  bio              String?
+  skills           String[]  @default([])
+  averageRating    Float     @default(0)
+  totalReviews     Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+```
 
-### Profile Page Features
-1. **Overview Tab**: Project statistics, rating summary, recent reviews
-2. **Projects Tab**: Detailed project breakdown by status
-3. **Reviews Tab**: All reviews with detailed view (sellers only)
-4. **Analytics Tab**: Real-time charts and performance metrics
+### Project Model
+```prisma
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  budgetRange String
+  deadline    DateTime
+  status      ProjectStatus @default(PENDING)
+  imageUrl    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+```
 
-### Payment Features
-1. **Smart Payment Detection**: Automatically shows payment option for completed projects
-2. **Multiple Payment Methods**: Card, PayPal, Bank Transfer options
-3. **Payment Validation**: Form validation and error handling
-4. **Success/Failure Handling**: Proper feedback and redirection
+### Project Status Enum
+```prisma
+enum ProjectStatus {
+  PENDING      // Awaiting bids
+  IN_PROGRESS  // Seller assigned, work in progress
+  COMPLETED    // Work completed
+  CANCELLED    // Project cancelled
+}
+```
 
-### Rating System Features
-1. **5-Star Rating**: Visual star display with hover effects
-2. **Rating Distribution**: Play Store-style rating breakdown
-3. **Automatic Calculations**: Real-time average rating updates
-4. **Review Management**: Create, update, and view reviews
+## Styling and Theme
 
-## Technical Implementation
+### Dark Theme Implementation
+- **CSS Variables**: Custom properties for consistent theming
+- **Tailwind Configuration**: Extended color palette for dark mode
+- **Component Styling**: Consistent styling across all components
+- **Animation Classes**: Custom animation utilities for smooth interactions
 
-### Real-time Analytics (SSE)
-- Server-Sent Events for live data streaming
-- Automatic reconnection handling
-- 30-second update intervals
-- Chart.js integration for visualizations
+### Key Design Elements
+- **Color Scheme**: Deep backgrounds with high contrast text
+- **Typography**: Gradient text effects for headings
+- **Spacing**: Consistent spacing scale throughout the application
+- **Borders**: Subtle borders with transparency for depth
+- **Shadows**: Carefully crafted shadows for elevation
 
-### Payment Processing
-- Simulated payment gateway (90% success rate for demo)
-- Secure form handling with validation
-- Transaction ID generation
-- Status tracking and updates
+### Responsive Design
+- **Mobile First**: Optimized for mobile devices
+- **Breakpoints**: Tablet and desktop optimizations
+- **Grid Layouts**: Responsive grid systems
+- **Navigation**: Adaptive navigation for different screen sizes
 
-### Database Optimizations
-- Efficient queries with proper indexing
-- Aggregation for statistics calculation
-- Relationship optimization for complex queries
-- Automatic rating recalculation triggers
+## Development Workflow
 
-## Usage Examples
+### Code Structure
+- **Component Organization**: Logical component hierarchy
+- **Type Safety**: Full TypeScript implementation
+- **Error Handling**: Comprehensive error handling and validation
+- **Performance**: Optimized rendering and data fetching
 
-### Viewing Profiles
-1. Click on any user's avatar or name to view their profile
-2. Navigate through tabs to see different information
-3. View real-time analytics in the Analytics tab
+### Best Practices
+- **Security**: JWT authentication with proper validation
+- **Accessibility**: WCAG compliant components
+- **SEO**: Optimized meta tags and structured data
+- **Performance**: Code splitting and lazy loading
 
-### Making Payments
-1. Complete a project as a seller
-2. Buyer will see payment option in project details
-3. Click "Make Payment" to proceed to payment page
-4. Fill payment details and process payment
+## Deployment
 
-### Rating and Reviews
-1. After project completion, buyers can leave reviews
-2. Ratings automatically update seller's average
-3. View rating distribution in seller profiles
-4. Reviews are limited to 10 characters minimum
+### Frontend Deployment (Vercel)
+1. Connect GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Enable automatic deployments on main branch push
 
-## Development Notes
+### Backend Deployment (Railway/Render)
+1. Create new service and connect repository
+2. Configure environment variables in service dashboard
+3. Set build and start commands:
+   - Build: `bun install && bun run build`
+   - Start: `bun start`
 
-- All new components are fully responsive
-- TypeScript strict mode enabled
-- Proper error handling and loading states
-- Accessibility features included
-- SEO-friendly routing structure
+### Database Deployment
+1. Set up PostgreSQL database on cloud provider
+2. Update DATABASE_URL in production environment
+3. Run database migrations in production
+
+## Troubleshooting
+
+### Common Issues
+1. **Database Connection**: Ensure PostgreSQL is running and accessible
+2. **Environment Variables**: Verify all required variables are set
+3. **Port Conflicts**: Check if ports 3000 and 5000 are available
+4. **Cloudinary Setup**: Verify Cloudinary credentials are correct
+
+### Development Tips
+- Use `bun run dev` for faster development server startup
+- Enable TypeScript strict mode for better type safety
+- Use browser dev tools for debugging API calls
+- Check server logs for backend error details
 
 ## Future Enhancements
 
-1. **Real Payment Integration**: Stripe/PayPal API integration
-2. **Advanced Analytics**: More detailed reporting and insights
-3. **Notification System**: Real-time notifications for payments and reviews
-4. **Mobile App**: React Native implementation
-5. **Advanced Search**: Filter profiles by rating, skills, location
+### Planned Features
+1. **Real-time Chat**: WebSocket-based communication between users
+2. **Advanced Search**: Enhanced filtering and search capabilities
+3. **Mobile App**: React Native implementation
+4. **Notification System**: Push notifications for important updates
+5. **Advanced Analytics**: Detailed performance metrics and insights
+
+### Technical Improvements
+1. **Caching**: Redis implementation for improved performance
+2. **Testing**: Comprehensive test suite with Jest and Cypress
+3. **Monitoring**: Application performance monitoring
+4. **Documentation**: API documentation with OpenAPI/Swagger
+
+---
+
+Built with modern web technologies and best practices for a seamless user experience.

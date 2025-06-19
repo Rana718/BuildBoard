@@ -30,7 +30,6 @@ model User {
   bids             Bid[]
   reviewsGiven     Review[]  @relation("BuyerReviews")
   reviewsReceived  Review[]  @relation("SellerReviews")
-  payments         Payment[]
 
   @@map("users")
 }
@@ -40,7 +39,6 @@ model Project {
   title       String
   description String
   budgetRange String
-  finalAmount Float?
   deadline    DateTime
   status      ProjectStatus @default(PENDING)
   imageUrl    String?
@@ -57,7 +55,6 @@ model Project {
   bids         Bid[]
   deliverables Deliverable[]
   reviews      Review[]
-  payments     Payment[]
 
   @@map("projects")
 }
@@ -84,6 +81,8 @@ model Bid {
 model Deliverable {
   id         String   @id @default(cuid())
   fileUrl    String
+  fileName   String?
+  fileSize   Int?
   uploadedAt DateTime @default(now())
 
   // Foreign Keys
@@ -100,6 +99,7 @@ model Review {
   rating    Int      @db.SmallInt
   comment   String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Foreign Keys
   projectId String @unique
@@ -124,32 +124,4 @@ enum ProjectStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
-  PAYMENT_PENDING
-}
-
-model Payment {
-  id            String        @id @default(cuid())
-  amount        Float
-  status        PaymentStatus @default(PENDING)
-  paymentMethod String?
-  transactionId String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  // Foreign Keys
-  projectId String
-  buyerId   String
-
-  // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  buyer   User    @relation(fields: [buyerId], references: [id])
-
-  @@map("payments")
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
 }

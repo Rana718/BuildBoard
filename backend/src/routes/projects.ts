@@ -463,4 +463,175 @@ router.post('/deliver/:id', requireRole(['SELLER']), async (req: AuthRequest, re
   }
 });
 
+// Get assigned projects for seller
+router.get('/seller/assigned', requireRole(['SELLER']), async (req: AuthRequest, res) => {
+  try {
+    const sellerId = req.user!.id;
+    
+    const assignedProjects = await prisma.project.findMany({
+      where: {
+        sellerId: sellerId,
+        status: 'IN_PROGRESS'
+      },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+          }
+        },
+        bids: {
+          where: {
+            sellerId: sellerId
+          },
+          select: {
+            bidAmount: true,
+            estimatedCompletionTime: true,
+            message: true
+          }
+        },
+        deliverables: {
+          orderBy: {
+            uploadedAt: 'desc',
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    res.json(assignedProjects);
+  } catch (error) {
+    console.error('Get assigned projects error:', error);
+    res.status(500).json({ error: 'Failed to fetch assigned projects' });
+  }
+});
+
+// Get completed projects for seller
+router.get('/seller/completed', requireRole(['SELLER']), async (req: AuthRequest, res) => {
+  try {
+    const sellerId = req.user!.id;
+    
+    const completedProjects = await prisma.project.findMany({
+      where: {
+        sellerId: sellerId,
+        status: 'COMPLETED'
+      },
+      include: {
+        buyer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+          }
+        },
+        bids: {
+          where: {
+            sellerId: sellerId
+          },
+          select: {
+            bidAmount: true,
+            estimatedCompletionTime: true,
+            message: true
+          }
+        },
+        deliverables: {
+          orderBy: {
+            uploadedAt: 'desc',
+          }
+        },
+        reviews: {
+          include: {
+            buyer: {
+              select: {
+                id: true,
+                name: true,
+                profileImageUrl: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    res.json(completedProjects);
+  } catch (error) {
+    console.error('Get completed projects error:', error);
+    res.status(500).json({ error: 'Failed to fetch completed projects' });
+  }
+});
+
+// Get all projects for buyer (created by them)
+router.get('/buyer/created', requireRole(['BUYER']), async (req: AuthRequest, res) => {
+  try {
+    const buyerId = req.user!.id;
+    
+    const createdProjects = await prisma.project.findMany({
+      where: {
+        buyerId: buyerId
+      },
+      include: {
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImageUrl: true,
+            averageRating: true,
+            totalReviews: true
+          }
+        },
+        bids: {
+          include: {
+            seller: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImageUrl: true,
+                averageRating: true,
+                totalReviews: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc',
+          }
+        },
+        deliverables: {
+          orderBy: {
+            uploadedAt: 'desc',
+          }
+        },
+        reviews: {
+          include: {
+            seller: {
+              select: {
+                id: true,
+                name: true,
+                profileImageUrl: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    res.json(createdProjects);
+  } catch (error) {
+    console.error('Get created projects error:', error);
+    res.status(500).json({ error: 'Failed to fetch created projects' });
+  }
+});
+
 export default router;

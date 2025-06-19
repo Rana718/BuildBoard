@@ -1,69 +1,90 @@
-# Project Bidding and Management System
+# BuildBoard - Project Management Platform
 
-A full-stack web application that connects buyers with sellers for project-based work. Buyers can post projects, receive bids from sellers, and manage the entire project lifecycle from bidding to completion.
+A modern, full-stack web application that connects buyers with sellers for project-based work. Built with a sleek dark theme and intuitive user experience, BuildBoard streamlines the entire project lifecycle from bidding to completion.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **User Authentication**: JWT-based login/signup with role-based access (Buyer/Seller)
-- **Project Management**: Create, view, update projects with status tracking
-- **Bidding System**: Sellers can place competitive bids on projects
+- **User Authentication**: Secure JWT-based login/signup with role-based access (Buyer/Seller)
+- **Project Management**: Create, view, update projects with comprehensive status tracking
+- **Bidding System**: Competitive bidding platform with detailed proposals
 - **File Upload**: Cloudinary integration for profile images, project images, and deliverables
-- **Email Notifications**: Automated emails for project updates and milestones
-- **Review System**: Rating and feedback system for completed projects
+- **Email Notifications**: Automated SMTP notifications for project updates and milestones
+- **Review System**: 5-star rating and feedback system for completed projects
 
 ### User Roles
 
 #### Buyers
-- Post detailed project requirements
-- Receive and review bids from sellers
-- Select the best seller for their project
-- Track project progress and deliverables
-- Leave reviews and ratings
+- Post detailed project requirements with rich descriptions
+- Receive and review competitive bids from verified sellers
+- Select the best seller based on proposals and ratings
+- Track project progress with real-time updates
+- Leave comprehensive reviews and ratings
 
 #### Sellers
-- Browse available projects
-- Submit competitive proposals with pricing and timelines
-- Upload deliverables and manage project completion
-- Build reputation through reviews
+- Browse curated projects matching their expertise
+- Submit compelling proposals with portfolios and timelines
+- Upload deliverables with milestone tracking
+- Build reputation through client reviews and ratings
 
 ## 🛠 Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 15.3.3 with App Router
-- **Styling**: Tailwind CSS v4
+- **Styling**: Tailwind CSS v4 with custom dark theme
 - **UI Components**: shadcn/ui with Radix UI primitives
 - **State Management**: Zustand for authentication
 - **Forms**: React Hook Form with Zod validation
-- **File Upload**: Cloudinary integration
-- **HTTP Client**: Axios
+- **File Upload**: Cloudinary integration with drag-and-drop
+- **HTTP Client**: Axios with interceptors
+- **Icons**: Lucide React
 
 ### Backend
 - **Runtime**: Node.js with TypeScript
-- **Framework**: Express.js
+- **Framework**: Express.js with modern middleware
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT with bcryptjs
-- **Email**: Nodemailer
-- **Validation**: Zod
-- **File Handling**: Integration with frontend upload system
+- **Authentication**: JWT with bcryptjs hashing
+- **Email**: Nodemailer with SMTP
+- **Validation**: Zod schemas
+- **File Handling**: Cloudinary integration
+
+## 🎨 Design Features
+
+### Dark Theme
+- **Modern Dark UI**: Carefully crafted dark theme with high contrast
+- **Gradient Backgrounds**: Subtle gradients for visual depth
+- **Smooth Animations**: CSS transitions and keyframe animations
+- **Responsive Design**: Mobile-first approach with breakpoint optimization
+- **Accessibility**: WCAG compliant with proper focus states
+
+### Enhanced UX
+- **Loading States**: Shimmer effects and skeleton screens
+- **Hover Effects**: Interactive elements with smooth transitions
+- **Status Indicators**: Color-coded project status badges
+- **Card Hover**: Subtle elevation and shadow effects
+- **Button Interactions**: Scale and translate animations
 
 ## 📁 Project Structure
 
 ```
-webbuy/
+BuildBoard/
 ├── frontend/                 # Next.js frontend application
 │   ├── src/
-│   │   ├── app/             # App Router pages
+│   │   ├── app/             # App Router pages and layouts
 │   │   ├── components/      # Reusable UI components
+│   │   │   ├── ui/         # shadcn/ui components
+│   │   │   └── profile/    # Profile-specific components
 │   │   ├── lib/            # Utilities and API clients
-│   │   └── hooks/          # Custom React hooks
+│   │   ├── hooks/          # Custom React hooks
+│   │   └── middleware.ts   # Next.js middleware
 │   ├── public/             # Static assets
 │   └── package.json
 ├── backend/                 # Node.js backend API
 │   ├── src/
 │   │   ├── routes/         # API route handlers
 │   │   ├── lib/           # Utilities and configurations
-│   │   └── index.ts       # Server entry point
+│   │   ├── middleware/    # Authentication middleware
+│   │   └── types/         # TypeScript definitions
 │   ├── prisma/            # Database schema and migrations
 │   └── package.json
 └── README.md
@@ -72,7 +93,7 @@ webbuy/
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+ or Bun
 - PostgreSQL database
 - Cloudinary account (for file uploads)
 - SMTP email service (for notifications)
@@ -86,7 +107,8 @@ cd backend
 
 2. **Install dependencies**:
 ```bash
-npm install
+bun install
+# or npm install
 ```
 
 3. **Environment setup**:
@@ -98,15 +120,15 @@ cp .env.example .env
 4. **Database setup**:
 ```bash
 # Generate Prisma client
-npm run db:generate
+bunx prisma generate
 
 # Push schema to database
-npm run db:push
+bunx prisma db push
 ```
 
 5. **Start development server**:
 ```bash
-npm run dev
+bun run dev
 ```
 
 The backend will run on `http://localhost:5000`
@@ -120,7 +142,8 @@ cd frontend
 
 2. **Install dependencies**:
 ```bash
-npm install
+bun install
+# or npm install
 ```
 
 3. **Environment setup**:
@@ -131,7 +154,7 @@ cp .env.example .env.local
 
 4. **Start development server**:
 ```bash
-npm run dev
+bun run dev
 ```
 
 The frontend will run on `http://localhost:3000`
@@ -140,7 +163,7 @@ The frontend will run on `http://localhost:3000`
 
 ### Backend (.env)
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/webbuy_db"
+DATABASE_URL="postgresql://username:password@localhost:5432/buildboard_db"
 JWT_SECRET="your-super-secret-jwt-key"
 PORT=5000
 NODE_ENV=development
@@ -165,86 +188,112 @@ NEXT_PUBLIC_API_URL="http://localhost:5000/api"
 ## 📊 Database Schema
 
 ### Core Models
-- **User**: Authentication and profile information
-- **Project**: Project details and status tracking
-- **Bid**: Seller proposals for projects
+- **User**: Authentication, profiles, and rating information
+- **Project**: Project details with status and deadline tracking
+- **Bid**: Seller proposals with pricing and timelines
 - **Deliverable**: File uploads for project completion
-- **Review**: Rating and feedback system
+- **Review**: Rating and feedback system with timestamps
 
-### Relationships
-- Users can be buyers or sellers (role-based)
+### Key Relationships
+- Users can be buyers or sellers (role-based access)
 - Projects belong to buyers and can be assigned to sellers
-- Bids connect sellers to projects
-- Reviews link completed projects with feedback
+- Bids connect sellers to specific projects
+- Reviews link completed projects with buyer feedback
+- Deliverables track file submissions per project
 
 ## 🔗 API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/profile` - Update profile
+- `POST /api/auth/register` - User registration with validation
+- `POST /api/auth/login` - User login with JWT generation
+- `GET /api/auth/me` - Get current authenticated user
+- `PUT /api/auth/profile` - Update user profile information
 
 ### Projects
-- `POST /api/projects/create` - Create project (Buyer)
-- `GET /api/projects` - Get projects (filtered by role)
-- `GET /api/projects/:id` - Get single project
-- `POST /api/projects/select-seller/:id` - Select seller (Buyer)
-- `POST /api/projects/complete/:id` - Complete project (Seller)
-- `POST /api/projects/deliver/:id` - Upload deliverable (Seller)
+- `POST /api/projects/create` - Create new project (Buyer only)
+- `GET /api/projects` - Get projects with role-based filtering
+- `GET /api/projects/:id` - Get single project with details
+- `POST /api/projects/select-seller/:id` - Select seller for project
+- `POST /api/projects/complete/:id` - Mark project as complete
+- `POST /api/projects/deliver/:id` - Upload project deliverable
 
 ### Bids
-- `POST /api/bids/place` - Place bid (Seller)
-- `GET /api/bids/:projectId` - Get project bids
+- `POST /api/bids/place` - Place bid on project (Seller only)
+- `GET /api/bids/:projectId` - Get all bids for project
 
 ### Reviews
-- `POST /api/reviews/:projectId` - Create review (Buyer)
-- `GET /api/reviews/seller/:sellerId` - Get seller reviews
+- `POST /api/reviews/:projectId` - Create review for completed project
+- `GET /api/reviews/seller/:sellerId` - Get seller reviews and ratings
 
-## 🚀 Deployment
-
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Backend (DigitalOcean/Render)
-1. Create a new app and connect your repository
-2. Set environment variables
-3. Configure build and start commands:
-   - Build: `npm install && npm run build`
-   - Start: `npm start`
+### Profile
+- `GET /api/profile/:userId` - Get user profile with statistics
+- `PUT /api/profile/:userId` - Update user profile information
 
 ## 🎯 Key Features Walkthrough
 
 ### Project Lifecycle
-1. **Buyer posts project** with requirements and budget
-2. **Sellers browse and bid** on projects with proposals
+1. **Buyer posts project** with detailed requirements and budget
+2. **Sellers browse and bid** with competitive proposals
 3. **Buyer selects seller** from submitted bids
-4. **Project moves to "In Progress"** status
-5. **Seller uploads deliverables** and marks complete
-6. **Buyer reviews deliverables** and leaves feedback
+4. **Project status updates** to "In Progress"
+5. **Seller uploads deliverables** and marks project complete
+6. **Buyer reviews work** and leaves rating/feedback
+
+### Enhanced UI/UX
+- **Dark Theme**: Modern dark interface with carefully chosen colors
+- **Smooth Animations**: CSS transitions for all interactive elements
+- **Loading States**: Skeleton screens and shimmer effects
+- **Responsive Design**: Mobile-first with tablet and desktop optimization
+- **Status Indicators**: Color-coded badges for project status
 
 ### File Upload System
-- Uses Cloudinary for reliable file storage
-- Supports profile images, project images, and deliverables
-- Frontend handles upload, backend stores URLs
-- Drag-and-drop interface with progress indicators
-
-### Email Notifications
-- Seller selection notifications
-- Project completion alerts
-- Automated SMTP delivery
-- HTML email templates
+- **Cloudinary Integration**: Reliable cloud storage for all files
+- **Drag-and-Drop**: Intuitive file upload interface
+- **Progress Indicators**: Real-time upload progress
+- **File Validation**: Type and size restrictions
+- **Preview Support**: Image previews before upload
 
 ## 🔒 Security Features
 
-- JWT-based authentication with secure token storage
-- Role-based access control (RBAC)
-- Input validation with Zod schemas
-- Password hashing with bcryptjs
-- CORS configuration for API security
-- Environment variable protection
+- **JWT Authentication**: Secure token-based authentication
+- **Role-Based Access**: Buyer/Seller permission system
+- **Input Validation**: Zod schemas for all API endpoints
+- **Password Security**: bcryptjs hashing with salt
+- **CORS Protection**: Configured for production security
+- **Environment Variables**: Sensitive data protection
+
+## 🚀 Deployment
+
+### Frontend (Vercel)
+1. Connect GitHub repository to Vercel
+2. Configure environment variables in dashboard
+3. Enable automatic deployments on push
+
+### Backend (Railway/Render)
+1. Create new service and connect repository
+2. Configure environment variables
+3. Set build and start commands:
+   - Build: `bun install && bun run build`
+   - Start: `bun start`
+
+## 🎨 Styling Guide
+
+### Color Scheme
+- **Background**: Deep dark tones for comfortable viewing
+- **Primary**: Blue accent for interactive elements
+- **Secondary**: Muted colors for supporting content
+- **Status Colors**: Green (success), Yellow (pending), Red (error)
+
+### Typography
+- **Headings**: Bold weights with gradient text effects
+- **Body**: Readable font sizes with proper line height
+- **Code**: Monospace font for technical content
+
+### Components
+- **Cards**: Subtle borders with hover effects
+- **Buttons**: Scale animations with color transitions
+- **Forms**: Focus states with ring effects
+- **Navigation**: Active states with background highlights
 
 ## 🤝 Contributing
 
@@ -262,9 +311,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue in the GitHub repository
-- Check the documentation in individual README files
+- Check the documentation for setup instructions
 - Review the API documentation for endpoint details
 
 ---
 
-Built with ❤️ using Next.js, Express.js, and PostgreSQL
+Built with ❤️ using Next.js, Express.js, PostgreSQL, and modern web technologies.

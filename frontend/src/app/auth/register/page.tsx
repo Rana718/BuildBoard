@@ -66,7 +66,7 @@ export default function RegisterPage() {
       toast({
         title: 'Registration failed',
         description: error.response?.data?.message || 'An error occurred',
-        variant: 'error',
+        variant:'error',
       });
     } finally {
       setLoading(false);
@@ -79,120 +79,143 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>
-            Join our platform as a buyer or seller
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Profile Picture (Optional)
-              </label>
-              <FileUpload
-                onUpload={handleImageUpload}
-                accept="image/*"
-                maxSize={2 * 1024 * 1024} // 2MB
-                className="mb-4"
-              />
-            </div>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">BuildBoard</h1>
+          <p className="text-muted-foreground">Project Management Platform</p>
+        </div>
 
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
-              </label>
-              <Input
-                id="name"
-                {...register('name')}
-                className={errors.name ? 'border-red-500' : ''}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-              )}
-            </div>
+        <Card className="border-border bg-card shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-bold text-card-foreground">Create Account</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Join our platform as a buyer or seller
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Profile Picture (Optional)
+                </label>
+                <FileUpload
+                  onUpload={handleImageUpload}
+                  accept="image/*"
+                  maxSize={2 * 1024 * 1024} // 2MB
+                  className="mb-4"
+                />
+              </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-              )}
-            </div>
+              <div className="space-y-2">
+                <label htmlFor="name" className="block text-sm font-medium text-card-foreground">
+                  Full Name
+                </label>
+                <Input
+                  id="name"
+                  {...register('name')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.name ? 'border-destructive focus-visible:ring-destructive' : ''
+                    }`}
+                  placeholder="Enter your full name"
+                />
+                {errors.name && (
+                  <p className="text-destructive text-sm">{errors.name.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                I want to
-              </label>
-              <select
-                id="role"
-                {...register('role')}
-                className={`w-full px-3 py-2 border rounded-md ${errors.role ? 'border-red-500' : 'border-gray-300'}`}
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-card-foreground">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.email ? 'border-destructive focus-visible:ring-destructive' : ''
+                    }`}
+                  placeholder="Enter your email address"
+                />
+                {errors.email && (
+                  <p className="text-destructive text-sm">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="role" className="block text-sm font-medium text-card-foreground">
+                  I want to
+                </label>
+                <select
+                  id="role"
+                  {...register('role')}
+                  className={`w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${errors.role ? 'border-destructive focus:ring-destructive' : ''
+                    }`}
+                >
+                  <option value="" className="text-muted-foreground">Select your role</option>
+                  <option value="BUYER" className="text-foreground">Post projects and hire sellers</option>
+                  <option value="SELLER" className="text-foreground">Find projects and submit bids</option>
+                </select>
+                {errors.role && (
+                  <p className="text-destructive text-sm">{errors.role.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-card-foreground">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register('password')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.password ? 'border-destructive focus-visible:ring-destructive' : ''
+                    }`}
+                  placeholder="Enter your password"
+                />
+                {errors.password && (
+                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-card-foreground">
+                  Confirm Password
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  {...register('confirmPassword')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${errors.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : ''
+                    }`}
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5"
+                disabled={loading}
               >
-                <option value="">Select your role</option>
-                <option value="BUYER">Post projects and hire sellers</option>
-                <option value="SELLER">Find projects and submit bids</option>
-              </select>
-              {errors.role && (
-                <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>
-              )}
+                {loading ? 'Creating account...' : 'Create Account'}
+              </Button>
+            </form>
+
+            <div className="text-center pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link
+                  href="/auth/login"
+                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                {...register('password')}
-                className={errors.password ? 'border-red-500' : ''}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                {...register('confirmPassword')}
-                className={errors.confirmPassword ? 'border-red-500' : ''}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/auth/login" className="text-blue-600 hover:text-blue-500">
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

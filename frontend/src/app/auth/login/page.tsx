@@ -59,61 +59,90 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-              )}
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">BuildBoard</h1>
+          <p className="text-muted-foreground">Project Management Platform</p>
+        </div>
+        
+        <Card className="border-border bg-card shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <CardTitle className="text-2xl font-bold text-card-foreground">Welcome Back</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-card-foreground">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${
+                    errors.email ? 'border-destructive focus-visible:ring-destructive' : ''
+                  }`}
+                  placeholder="Enter your email address"
+                />
+                {errors.email && (
+                  <p className="text-destructive text-sm">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-card-foreground">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  {...register('password')}
+                  className={`bg-background border-input text-foreground placeholder:text-muted-foreground ${
+                    errors.password ? 'border-destructive focus-visible:ring-destructive' : ''
+                  }`}
+                  placeholder="Enter your password"
+                />
+                {errors.password && (
+                  <p className="text-destructive text-sm">{errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Link 
+                  href="/auth/forgot-password" 
+                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5" 
+                disabled={loading}
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </form>
+
+            <div className="text-center pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link 
+                  href="/auth/register" 
+                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Create account
+                </Link>
+              </p>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                {...register('password')}
-                className={errors.password ? 'border-red-500' : ''}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/auth/register" className="text-blue-600 hover:text-blue-500">
-                Sign up
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

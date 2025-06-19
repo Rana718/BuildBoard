@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Project Bidding System",
-  description: "A platform for buyers and sellers to manage project bidding",
+  title: "BuildBoard - Project Management Platform",
+  description: "A modern platform for buyers and sellers to manage project bidding and collaboration",
 };
 
 export default function RootLayout({
@@ -24,12 +24,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark bg-background text-foreground min-h-screen`}
       >
-        {children}
-        <Toaster />
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+          {children}
+        </div>
+        <Toaster theme="dark" />
       </body>
     </html>
   );
