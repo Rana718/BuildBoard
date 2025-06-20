@@ -8,9 +8,6 @@ import { FolderOpen, Plus, Home, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-interface LayoutProps {
-    children: React.ReactNode;
-}
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
     const { user } = useAuth();

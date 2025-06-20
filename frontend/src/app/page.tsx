@@ -19,7 +19,7 @@ export default function Home() {
   }, [isAuthenticated, user, router]);
 
   if (isAuthenticated) {
-    return null; // Will redirect to dashboard
+    return null; 
   }
 
   return (

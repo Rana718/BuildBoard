@@ -18,6 +18,7 @@ import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { ProjectFullData } from "@/types"
 
 const bidSchema = z.object({
   bidAmount: z.number().positive("Bid amount must be positive"),
@@ -33,62 +34,12 @@ const reviewSchema = z.object({
 type BidForm = z.infer<typeof bidSchema>
 type ReviewForm = z.infer<typeof reviewSchema>
 
-interface Project {
-  id: string
-  title: string
-  description: string
-  budgetRange: string
-  deadline: string
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED"
-  imageUrl?: string
-  createdAt: string
-  buyer: {
-    id: string
-    name: string
-    email: string
-    profileImageUrl?: string
-  }
-  seller?: {
-    id: string
-    name: string
-    email: string
-    profileImageUrl?: string
-  }
-  bids: Array<{
-    id: string
-    bidAmount: number
-    estimatedCompletionTime: string
-    message: string
-    createdAt: string
-    seller: {
-      id: string
-      name: string
-      email: string
-      profileImageUrl?: string
-    }
-  }>
-  deliverables: Array<{
-    id: string
-    fileUrl: string
-    uploadedAt: string
-  }>
-  reviews: Array<{
-    id: string
-    rating: number
-    comment?: string
-    createdAt: string
-    buyer: {
-      id: string
-      name: string
-      profileImageUrl?: string
-    }
-  }>
-}
+
 
 export default function ProjectDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
-  const [project, setProject] = useState<Project | null>(null)
+  const [project, setProject] = useState<ProjectFullData | null>(null)
   const [loading, setLoading] = useState(true)
   const [bidding, setBidding] = useState(false)
   const [showBidForm, setShowBidForm] = useState(false)

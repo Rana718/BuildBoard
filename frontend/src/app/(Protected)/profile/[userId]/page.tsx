@@ -26,29 +26,7 @@ import {
 import { ReviewCard } from '@/components/profile/ReviewCard';
 import { EditProfileDialog } from '@/components/profile/EditProfileDialog';
 import { format } from 'date-fns';
-
-interface ProfileData {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: 'BUYER' | 'SELLER';
-    profileImageUrl?: string;
-    bio?: string;
-    skills: string[];
-    averageRating: number;
-    totalReviews: number;
-    createdAt: string;
-    _count: {
-      projectsAsBuyer: number;
-      projectsAsSeller: number;
-      reviewsReceived: number;
-    };
-  };
-  projectStats: any;
-  reviews: any[];
-  ratingStats: Record<string, number>;
-}
+import { ProfileData } from '@/types';
 
 export default function ProfilePage() {
   const params = useParams();

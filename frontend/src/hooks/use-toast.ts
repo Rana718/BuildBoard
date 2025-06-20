@@ -38,13 +38,13 @@ export function toast({ title, description, variant = "default", action }: Toast
 export function useToast() {
   return {
     toast,
-    success: (title?: string, description?: string, action?: ToastProps['action']) => 
+    success: (title?: string, description?: string, action?: ToastProps['action']) =>
       toast({ title, description, variant: "success", action }),
-    error: (title?: string, description?: string, action?: ToastProps['action']) => 
+    error: (title?: string, description?: string, action?: ToastProps['action']) =>
       toast({ title, description, variant: "error", action }),
-    warning: (title?: string, description?: string, action?: ToastProps['action']) => 
+    warning: (title?: string, description?: string, action?: ToastProps['action']) =>
       toast({ title, description, variant: "warning", action }),
-    info: (title?: string, description?: string, action?: ToastProps['action']) => 
+    info: (title?: string, description?: string, action?: ToastProps['action']) =>
       toast({ title, description, variant: "info", action }),
     dismiss: sonnerToast.dismiss,
   }

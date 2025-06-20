@@ -49,7 +49,7 @@ export function FileUpload({
       toast({
         title: 'File too large',
         description: `File size should be less than ${maxSize / (1024 * 1024)}MB`,
-        variant: 'destructive',
+        variant: 'error',
       });
       return;
     }
@@ -69,7 +69,7 @@ export function FileUpload({
       toast({
         title: 'Upload failed',
         description: 'Failed to upload file. Please try again.',
-        variant: 'destructive',
+        variant: 'error',
       });
     } finally {
       setUploading(false);

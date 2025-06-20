@@ -116,9 +116,8 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="Enter your full name"
                   {...register('name')}
-                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
-                    errors.name ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
-                  }`}
+                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${errors.name ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                    }`}
                 />
                 {errors.name && (
                   <p className="text-destructive text-sm font-medium">{errors.name.message}</p>
@@ -136,9 +135,8 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="Enter your email address"
                   {...register('email')}
-                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
-                    errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
-                  }`}
+                  className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${errors.email ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                    }`}
                 />
                 {errors.email && (
                   <p className="text-destructive text-sm font-medium">{errors.email.message}</p>
@@ -151,11 +149,10 @@ export default function RegisterPage() {
                   I want to *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedRole === 'BUYER' 
-                      ? 'border-primary bg-primary/10 text-primary' 
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${selectedRole === 'BUYER'
+                      ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-primary/50 hover:bg-accent/50'
-                  }`}>
+                    }`}>
                     <input
                       type="radio"
                       value="BUYER"
@@ -169,11 +166,10 @@ export default function RegisterPage() {
                     </span>
                   </label>
 
-                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedRole === 'SELLER' 
-                      ? 'border-primary bg-primary/10 text-primary' 
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${selectedRole === 'SELLER'
+                      ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-primary/50 hover:bg-accent/50'
-                  }`}>
+                    }`}>
                     <input
                       type="radio"
                       value="SELLER"
@@ -204,9 +200,8 @@ export default function RegisterPage() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create a strong password"
                     {...register('password')}
-                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
-                      errors.password ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
-                    }`}
+                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${errors.password ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                      }`}
                   />
                   <button
                     type="button"
@@ -233,9 +228,8 @@ export default function RegisterPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Confirm your password"
                     {...register('confirmPassword')}
-                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${
-                      errors.confirmPassword ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
-                    }`}
+                    className={`h-11 bg-background/80 border-2 border-input text-foreground placeholder:text-muted-foreground pr-10 transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 ${errors.confirmPassword ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : ''
+                      }`}
                   />
                   <button
                     type="button"
@@ -273,8 +267,8 @@ export default function RegisterPage() {
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link 
-              href="/auth/login" 
+            <Link
+              href="/auth/login"
               className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
               Sign in here

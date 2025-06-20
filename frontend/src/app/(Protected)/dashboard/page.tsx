@@ -20,33 +20,7 @@ import {
   DollarSign,
   Eye
 } from 'lucide-react';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  budgetRange: string;
-  deadline: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  imageUrl?: string;
-  createdAt: string;
-  buyer: {
-    id: string;
-    name: string;
-    email: string;
-    profileImageUrl?: string;
-  };
-  seller?: {
-    id: string;
-    name: string;
-    email: string;
-    profileImageUrl?: string;
-  };
-  _count: {
-    bids: number;
-    deliverables?: number;
-  };
-}
+import { Project } from '@/types';
 
 export default function DashboardPage() {
   const { user } = useAuth();
