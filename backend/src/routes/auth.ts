@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { hashPassword, comparePassword, generateToken } from '../lib/auth.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import EmailQueueService from '../services/emailQueue.js';
 
 const router = express.Router();
 
@@ -51,13 +52,21 @@ router.post('/register', async (req, res) => {
         createdAt: true,
       }
     });
-    
-    // Generate token
+      // Generate token
     const token = generateToken({
       id: user.id,
       email: user.email,
       role: user.role,
     });
+    
+    try {
+      await EmailQueueService.sendWelcomeEmail({
+        userEmail: user.email,
+        userName: user.name,
+      });
+    } catch (emailError) {
+      console.error('Failed to queue welcome email:', emailError);
+    }
     
     res.status(201).json({
       message: 'User registered successfully',

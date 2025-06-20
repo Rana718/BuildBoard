@@ -2,7 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { requireRole, AuthRequest } from '../middleware/auth.js';
-import { sendSellerSelectionEmail, sendProjectCompletionEmail } from '../lib/email.js';
+import EmailQueueService from '../services/emailQueue.js';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ const createProjectSchema = z.object({
 router.post('/create', requireRole(['BUYER']), async (req: AuthRequest, res) => {
   try {
     const validatedData = createProjectSchema.parse(req.body);
-    
+
     const project = await prisma.project.create({
       data: {
         ...validatedData,
@@ -41,19 +41,19 @@ router.post('/create', requireRole(['BUYER']), async (req: AuthRequest, res) => 
         }
       }
     });
-    
+
     res.status(201).json({
       message: 'Project created successfully',
       project,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Validation error',
-        errors: error.errors 
+        errors: error.errors
       });
     }
-    
+
     console.error('Create project error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -63,9 +63,9 @@ router.post('/create', requireRole(['BUYER']), async (req: AuthRequest, res) => 
 router.get('/', async (req: AuthRequest, res) => {
   try {
     const { status, role } = req.query;
-    
+
     let whereClause: any = {};
-    
+
     // Filter based on user role and query params
     if (req.user!.role === 'BUYER') {
       whereClause.buyerId = req.user!.id;
@@ -77,11 +77,11 @@ router.get('/', async (req: AuthRequest, res) => {
         whereClause.status = 'PENDING';
       }
     }
-    
+
     if (status && status !== 'all') {
       whereClause.status = status;
     }
-    
+
     const projects = await prisma.project.findMany({
       where: whereClause,
       include: {
@@ -112,7 +112,7 @@ router.get('/', async (req: AuthRequest, res) => {
         createdAt: 'desc',
       }
     });
-    
+
     res.json({ projects });
   } catch (error) {
     console.error('Get projects error:', error);
@@ -124,7 +124,7 @@ router.get('/', async (req: AuthRequest, res) => {
 router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    
+
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -177,21 +177,21 @@ router.get('/:id', async (req: AuthRequest, res) => {
         }
       }
     });
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     // Check if user has access to this project
-    const hasAccess = 
-      project.buyerId === req.user!.id || 
+    const hasAccess =
+      project.buyerId === req.user!.id ||
       project.sellerId === req.user!.id ||
       (req.user!.role === 'SELLER' && project.status === 'PENDING');
-    
+
     if (!hasAccess) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    
+
     res.json({ project });
   } catch (error) {
     console.error('Get project error:', error);
@@ -204,11 +204,11 @@ router.put('/status/:id', async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    
+
     if (!['PENDING', 'IN_PROGRESS', 'COMPLETED'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
-    
+
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -216,20 +216,20 @@ router.put('/status/:id', async (req: AuthRequest, res) => {
         seller: true,
       }
     });
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     // Check permissions
-    const canUpdate = 
-      (project.buyerId === req.user!.id) || 
+    const canUpdate =
+      (project.buyerId === req.user!.id) ||
       (project.sellerId === req.user!.id);
-    
+
     if (!canUpdate) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    
+
     const updatedProject = await prisma.project.update({
       where: { id },
       data: { status },
@@ -252,7 +252,7 @@ router.put('/status/:id', async (req: AuthRequest, res) => {
         }
       }
     });
-    
+
     res.json({
       message: 'Project status updated successfully',
       project: updatedProject,
@@ -268,7 +268,7 @@ router.post('/select-seller/:id', requireRole(['BUYER']), async (req: AuthReques
   try {
     const { id } = req.params;
     const { sellerId } = req.body;
-    
+
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -281,24 +281,24 @@ router.post('/select-seller/:id', requireRole(['BUYER']), async (req: AuthReques
         }
       }
     });
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     if (project.buyerId !== req.user!.id) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    
+
     if (project.status !== 'PENDING') {
       return res.status(400).json({ message: 'Project is not in pending status' });
     }
-    
+
     const bid = project.bids[0];
     if (!bid) {
       return res.status(404).json({ message: 'Bid not found' });
     }
-    
+
     // Update project with selected seller
     const updatedProject = await prisma.project.update({
       where: { id },
@@ -325,20 +325,19 @@ router.post('/select-seller/:id', requireRole(['BUYER']), async (req: AuthReques
         }
       }
     });
-    
-    // Send email notification to selected seller
+    // Send email notification to selected seller using queue
     try {
-      await sendSellerSelectionEmail(
-        bid.seller.email,
-        bid.seller.name,
-        project.title,
-        project.buyer.name
-      );
+      await EmailQueueService.sendSellerSelectionEmail({
+        sellerEmail: bid.seller.email,
+        sellerName: bid.seller.name,
+        projectTitle: project.title,
+        buyerName: project.buyer.name,
+      });
     } catch (emailError) {
       console.error('Email notification error:', emailError);
       // Don't fail the request if email fails
     }
-    
+
     res.json({
       message: 'Seller selected successfully',
       project: updatedProject,
@@ -353,7 +352,7 @@ router.post('/select-seller/:id', requireRole(['BUYER']), async (req: AuthReques
 router.post('/complete/:id', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    
+
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -361,19 +360,19 @@ router.post('/complete/:id', requireRole(['SELLER']), async (req: AuthRequest, r
         seller: true,
       }
     });
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     if (project.sellerId !== req.user!.id) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    
+
     if (project.status !== 'IN_PROGRESS') {
       return res.status(400).json({ message: 'Project is not in progress' });
     }
-    
+
     const updatedProject = await prisma.project.update({
       where: { id },
       data: { status: 'COMPLETED' },
@@ -396,20 +395,20 @@ router.post('/complete/:id', requireRole(['SELLER']), async (req: AuthRequest, r
         }
       }
     });
-    
-    // Send email notification to buyer
+    // Send email notification to both buyer and seller using queue
     try {
-      await sendProjectCompletionEmail(
-        project.buyer.email,
-        project.buyer.name,
-        project.title,
-        project.seller!.name
-      );
+      await EmailQueueService.sendProjectCompletedEmail({
+        buyerEmail: project.buyer.email,
+        sellerEmail: project.seller!.email,
+        projectTitle: project.title,
+        buyerName: project.buyer.name,
+        sellerName: project.seller!.name,
+      });
     } catch (emailError) {
       console.error('Email notification error:', emailError);
       // Don't fail the request if email fails
     }
-    
+
     res.json({
       message: 'Project completed successfully',
       project: updatedProject,
@@ -425,34 +424,34 @@ router.post('/deliver/:id', requireRole(['SELLER']), async (req: AuthRequest, re
   try {
     const { id } = req.params;
     const { fileUrl } = req.body;
-    
+
     if (!fileUrl) {
       return res.status(400).json({ message: 'File URL is required' });
     }
-    
+
     const project = await prisma.project.findUnique({
       where: { id }
     });
-    
+
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    
+
     if (project.sellerId !== req.user!.id) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    
+
     if (project.status !== 'IN_PROGRESS') {
       return res.status(400).json({ message: 'Project is not in progress' });
     }
-    
+
     const deliverable = await prisma.deliverable.create({
       data: {
         projectId: id,
         fileUrl,
       }
     });
-    
+
     res.status(201).json({
       message: 'Deliverable uploaded successfully',
       deliverable,
@@ -467,7 +466,7 @@ router.post('/deliver/:id', requireRole(['SELLER']), async (req: AuthRequest, re
 router.get('/seller/assigned', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const sellerId = req.user!.id;
-    
+
     const assignedProjects = await prisma.project.findMany({
       where: {
         sellerId: sellerId,
@@ -514,7 +513,7 @@ router.get('/seller/assigned', requireRole(['SELLER']), async (req: AuthRequest,
 router.get('/seller/completed', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const sellerId = req.user!.id;
-    
+
     const completedProjects = await prisma.project.findMany({
       where: {
         sellerId: sellerId,
@@ -572,7 +571,7 @@ router.get('/seller/completed', requireRole(['SELLER']), async (req: AuthRequest
 router.get('/buyer/created', requireRole(['BUYER']), async (req: AuthRequest, res) => {
   try {
     const buyerId = req.user!.id;
-    
+
     const createdProjects = await prisma.project.findMany({
       where: {
         buyerId: buyerId

@@ -7,7 +7,7 @@ import projectRoutes from './routes/projects.js';
 import bidRoutes from './routes/bids.js';
 import reviewRoutes from './routes/reviews.js';
 import profileRoutes from './routes/profile.js';
-// import uploadRoutes from './routes/upload.js';
+import './services/worker.js';
 
 dotenv.config();
 
@@ -30,17 +30,6 @@ app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/bids', authenticateToken, bidRoutes);
 app.use('/api/reviews', authenticateToken, reviewRoutes);
 app.use('/api/profile', authenticateToken, profileRoutes);
-// app.use('/api/upload', authenticateToken, uploadRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'BuildBoard API Server is running',
-    version: '2.0.0',
-    timestamp: new Date().toISOString()
-  });
-});
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

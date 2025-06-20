@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { requireRole, AuthRequest } from '../middleware/auth.js';
+import EmailQueueService from '../services/emailQueue.js';
 
 const router = express.Router();
 
@@ -16,8 +17,7 @@ const placeBidSchema = z.object({
 router.post('/place', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const validatedData = placeBidSchema.parse(req.body);
-    
-    // Check if project exists and is in pending status
+      // Check if project exists and is in pending status
     const project = await prisma.project.findUnique({
       where: { id: validatedData.projectId },
       include: {
@@ -25,6 +25,7 @@ router.post('/place', requireRole(['SELLER']), async (req: AuthRequest, res) => 
           select: {
             id: true,
             name: true,
+            email: true,
           }
         }
       }
@@ -55,8 +56,7 @@ router.post('/place', requireRole(['SELLER']), async (req: AuthRequest, res) => 
     if (existingBid) {
       return res.status(400).json({ message: 'You have already placed a bid on this project' });
     }
-    
-    // Create bid
+      // Create bid
     const bid = await prisma.bid.create({
       data: {
         ...validatedData,
@@ -80,6 +80,17 @@ router.post('/place', requireRole(['SELLER']), async (req: AuthRequest, res) => 
         }
       }
     });
+    
+    try {
+      await EmailQueueService.sendBidNotificationEmail({
+        buyerEmail: project.buyer.email,
+        bidderName: bid.seller.name,
+        projectTitle: project.title,
+        bidAmount: validatedData.bidAmount,
+      });
+    } catch (emailError) {
+      console.error('Bid notification email error:', emailError);
+    }
     
     res.status(201).json({
       message: 'Bid placed successfully',
@@ -112,8 +123,6 @@ router.get('/:projectId', async (req: AuthRequest, res) => {
       return res.status(404).json({ message: 'Project not found' });
     }
     
-    // Only project owner (buyer) can see all bids
-    // Sellers can only see their own bid
     let whereClause: any = { projectId };
     
     if (req.user!.role === 'SELLER' && project.buyerId !== req.user!.id) {
@@ -146,7 +155,6 @@ router.get('/:projectId', async (req: AuthRequest, res) => {
   }
 });
 
-// Update bid (Seller only, before project is assigned)
 router.put('/:bidId', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const { bidId } = req.params;
@@ -159,7 +167,6 @@ router.put('/:bidId', requireRole(['SELLER']), async (req: AuthRequest, res) => 
     
     const validatedData = updateBidSchema.parse(req.body);
     
-    // Check if bid exists and belongs to the seller
     const bid = await prisma.bid.findUnique({
       where: { id: bidId },
       include: {
@@ -218,12 +225,9 @@ router.put('/:bidId', requireRole(['SELLER']), async (req: AuthRequest, res) => 
   }
 });
 
-// Delete bid (Seller only, before project is assigned)
 router.delete('/:bidId', requireRole(['SELLER']), async (req: AuthRequest, res) => {
   try {
     const { bidId } = req.params;
-    
-    // Check if bid exists and belongs to the seller
     const bid = await prisma.bid.findUnique({
       where: { id: bidId },
       include: {
