@@ -5,13 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
     "start": "node dist/index.js",
-    "worker": "tsx watch src/services/worker-start.ts",
-    "worker:build": "node dist/services/worker-start.js",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "db:pro": "prisma generate && prisma migrate deploy"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

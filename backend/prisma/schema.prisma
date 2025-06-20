@@ -11,18 +11,18 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(cuid())
-  name             String
-  email            String    @unique
-  password         String
-  role             Role      @default(BUYER)
-  profileImageUrl  String?
-  bio              String?
-  skills           String[]  @default([])
-  averageRating    Float     @default(0)
-  totalReviews     Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  password        String
+  role            Role     @default(BUYER)
+  profileImageUrl String?
+  bio             String?
+  skills          String[] @default([])
+  averageRating   Float    @default(0)
+  totalReviews    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   projectsAsBuyer  Project[] @relation("BuyerProjects")
